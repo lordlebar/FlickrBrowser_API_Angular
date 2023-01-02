@@ -1,0 +1,123 @@
+<div class="container">
+  <div class="row">
+    <div class="col-sm-12 col-md-4 col-lg-4">
+      <div class="container-logo">
+        <img class="logo" src="./../../assets/images/logo.png" alt="Flickr logo" />
+      </div>
+      <div>
+        <mat-slide-toggle color="primary" [(ngModel)]="displayMode"
+          [checked]="displayMode">{{getDisplayMode()}}</mat-slide-toggle>
+      </div>
+      <div>
+        <mat-form-field appearance="outline" class="search-input">
+          <mat-label>Search a word</mat-label>
+          <input matInput type="text" [(ngModel)]="keyword" (change)="updateKeyword($event)" (keyup.enter)="onSubmit()"
+            placeholder="ex: Mercedes">
+        </mat-form-field>
+      </div>
+    </div>
+    <div class="col-sm-12 col-md-8 col-lg-8">
+      <form class="form-input" [formGroup]="form" (ngSubmit)="onSubmit()">
+        <p *ngIf="isDisabled();" style="color: rgba(124,97,176, 0.7); margin: 0; font-size: 12px;font-weight: 500;">Please give a keyword before search images</p>
+        <h2>Search images</h2>
+        <div class="row">
+          <div class="col-sm-12 col-md-6">
+            <mat-form-field appearance="outline">
+              <mat-label>Safe option</mat-label>
+              <mat-select (change)="setSafeMode($event)" [(value)]="safeMode">
+                <mat-option value="Safe">Safe</mat-option>
+                <mat-option value="Moderate">Moderate</mat-option>
+                <mat-option value="Restricted">Restricted</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          <div class="col-sm-12 col-md-6">
+            <div class="row input-date">
+              <div class="col-10">
+                <mat-form-field appearance="outline">
+                  <mat-label>Enter a date range</mat-label>
+                  <mat-date-range-input [rangePicker]="picker">
+                    <input matStartDate placeholder="Start date" [formControl]="formMinDate"
+                      (dateChange)="setMinDate($event.target.value)">
+                    <input matEndDate placeholder="End date" [formControl]="formMaxDate"
+                      (dateChange)="setMaxDate($event.target.value)">
+                  </mat-date-range-input>
+                  <mat-date-range-picker #picker></mat-date-range-picker>
+                </mat-form-field>
+              </div>
+              <div class="col-2 toggle">
+                <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-12">
+            <app-tags-chips (newItemEvent)="setTags($event)"></app-tags-chips>
+          </div>
+        </div>
+        <div class="row button-container">
+          <button pButton type="submit" label="Search" icon="pi pi-search" [loading]="isLoading()"
+            [disabled]="isDisabled()"></button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-sm-12 col-md-6 color-container">
+      <div *ngIf="isDisabled(); else colorSelectionDefault" class="color color-image">
+      </div>
+      <ng-template #colorSelectionDefault>
+        <img class="color color-image" src="../../assets/images/clipart4768373.png" alt="no color"
+          (click)="setColor(null)">
+      </ng-template>
+      <div class="color-content">
+        <mat-grid-list cols="20" rowHeight="1:1">
+          <mat-grid-tile *ngFor="let color of colors">
+            <div *ngIf="isDisabled(); else colorSelection">
+            </div>
+            <ng-template #colorSelection>
+              <div class="color" [style.background-color]="color" (click)="setColor(color)"></div>
+            </ng-template>
+          </mat-grid-tile>
+        </mat-grid-list>
+      </div>
+    </div>
+    <div *ngIf="isDisabled() === false; else sort;" class="col-sm-12 col-md-6 sort-container">
+      <mat-button-toggle-group name="fontStyle" aria-label="Font Style" value="date-posted-desc">
+        <mat-button-toggle value="date-posted-desc" (change)="sortPhotos($event.value)" [disabled]="isDisabled()">Most
+          recent</mat-button-toggle>
+        <mat-button-toggle value="date-posted-asc" (change)="sortPhotos($event.value)" [disabled]="isDisabled()">Less
+          recent</mat-button-toggle>
+        <mat-button-toggle value="interestingness-desc" (change)="sortPhotos($event.value)"
+          [disabled]="isDisabled()">Most popular </mat-button-toggle>
+        <mat-button-toggle value="interestingness-asc" (change)="sortPhotos($event.value)"
+          [disabled]="isDisabled()">Less popular</mat-button-toggle>
+      </mat-button-toggle-group>
+    </div>
+    <ng-template #sort>
+    </ng-template>
+  </div>
+
+
+
+  <div *ngIf="images.length === 0; else data">
+    <div class="col-12 lazy-container">
+      <mat-grid-list cols="{{ numberOfCol.length }}" rowHeight="1:1">
+        <mat-grid-tile *ngFor="let card of numberOfCards">
+          <p-skeleton shape="square" size="300px"></p-skeleton>
+        </mat-grid-tile>
+      </mat-grid-list>
+    </div>
+  </div>
+  <ng-template #data>
+    <div *ngIf="displayMode; else grid">
+      <app-carousel [images]="images"></app-carousel>
+    </div>
+    <ng-template #grid>
+      <app-cards-images [images]="images" [numberOfRows]="numberOfCol.length"
+        (newItemEvent)="updatenumberOfCol($event)"></app-cards-images>
+    </ng-template>
+  </ng-template>
+</div>
